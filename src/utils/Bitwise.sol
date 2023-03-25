@@ -3,17 +3,17 @@ pragma solidity 0.8.19;
 
 /**
  * @title Bitwise
- * @dev A library that provides bitwise operations on bytes values.
+ * @dev A Solidity library that provides utility functions for bitwise operations.
  */
 library Bitwise {
+
     /**
-     * @dev Checks whether a specified bit is set to 1 in a bytes1 value.
-     * @param src The bytes1 value to check.
-     * @param query The bit to check (must be set to 1).
-     * @return A boolean value indicating whether the specified bit is set to 1.
+     * @dev Checks if a bitwise query is satisfied by a test value.
+     * @param src The test value to check.
+     * @param query The bitwise query to check against.
+     * @return A boolean indicating whether the query is satisfied by the test value.
      */
-    function check1(bytes1 src, bytes1 query) internal pure returns (bool) {
+    function check(bytes1 src, bytes1 query) internal pure returns (bool) {
         return (src & query) == query;
     }
 }
-
