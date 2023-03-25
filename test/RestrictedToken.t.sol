@@ -9,14 +9,52 @@ import "../src/RestrictedToken.sol";
  * @dev A contract for testing the RestrictedToken contract.
  */
 contract TestRestrictedToken is Test {
+    RestrictedToken token;
+    uint256 initialSupply = 1000;
 
-    RestrictedToken restrictedToken;
+    event UpdateRestriction(address indexed account, bytes1 restriction);
 
     /**
      * @dev Initializes the test environment by deploying a new instance of the RestrictedToken contract.
      */
     function setUp() public {
-        restrictedToken = new RestrictedToken("Restricted Token", "RTK", 1000);
+        token = new RestrictedToken("Restricted Token", "RTK", initialSupply);
+    }
+
+    /**
+     * @dev Tests the `supportsInterface` function of the RestrictedToken contract.
+     */
+    function testSupportsIRestrictedToken() public {
+        // Set up
+        bytes4 interfaceId = type(IRestrictedToken).interfaceId;
+
+        // Verify the effects
+        assertTrue(token.supportsInterface(interfaceId));
+    }
+
+    /**
+     * @dev Tests the `supportsInterface` function of the RestrictedToken contract with invalid interface.
+     */
+    function testSupportsInvalidInterface() public {
+        // Set up
+        bytes4 interfaceId = bytes4(keccak256("invalidInterface()"));
+
+        // Verify the effects
+        assertFalse(token.supportsInterface(interfaceId));
+    }
+
+    /**
+     * @dev Tests the `transferOwnership` function of the RestrictedToken contract.
+     */
+    function testTransferOwnership() public {
+        // Set up
+        address newOwner = address(0x123);
+
+        // Call the function
+        token.transferOwnership(newOwner);
+        
+        // Verify the effects
+        assertEq(token.owner(), newOwner);
     }
 
     /**
@@ -25,13 +63,13 @@ contract TestRestrictedToken is Test {
     function testUpdateRestrictions() public {
         // Set up
         address account = address(0x123);
-        bytes1 restriction = restrictedToken.RESTRICTION_SEND();
+        bytes1 restriction = token.RESTRICTION_SEND();
 
         // Call the function
-        restrictedToken.updateRestriction(account, restriction);
+        token.updateRestriction(account, restriction);
 
         // Verify the effects
-        assertEq(restrictedToken.restrictions(account), restriction);
+        assertEq(token.restrictions(account), restriction);
     }
 
     /**
@@ -40,14 +78,52 @@ contract TestRestrictedToken is Test {
     function testUpdateRestrictionsForZeroAddress() public {
         // Set up
         address account = address(0);
-        bytes1 restriction = restrictedToken.RESTRICTION_SEND();
+        bytes1 restriction = token.RESTRICTION_SEND();
 
         // Call the function
-        (bool success, ) = address(restrictedToken).call(abi.encodeWithSignature("updateRestriction(address,bytes1)", account, restriction));
+        (bool success, ) = address(token).call(
+            abi.encodeWithSignature(
+                "updateRestriction(address,bytes1)",
+                account,
+                restriction
+            )
+        );
 
         // Verify the effects
         assertFalse(success);
-        assertTrue(restrictedToken.restrictions(account) != restriction);
+        assertTrue(token.restrictions(account) != restriction);
+    }
+
+    /**
+     * @dev Tests the `updateRestriction` function of the RestrictedToken contract with zero permission.
+     */
+    function testDeleteRestriction() public {
+        // Set up
+        address account = address(0x123);
+        bytes1 restriction = token.RESTRICTION_SEND();
+        token.updateRestriction(account, restriction);
+
+        // Call the function
+        token.updateRestriction(account, 0);
+
+        // Verify the effects
+        assertEq(token.restrictions(account), 0);
+    }
+
+    /**
+     * @dev Tests the `UpdateRestriction` event of the RestrictedToken contract.
+     */
+    function testUpdateRestrictionEvent() public {
+        // Set up
+        address account = address(0x123);
+        bytes1 restriction = token.RESTRICTION_SEND();
+        vm.expectEmit(true, false, false, false, address(token));
+
+        // We emit the event we expect to see.
+        emit TestRestrictedToken.UpdateRestriction(account, restriction);
+
+        // Call the function
+        token.updateRestriction(account, restriction);
     }
 
     /**
@@ -58,7 +134,7 @@ contract TestRestrictedToken is Test {
         address account = address(0x123);
 
         // Verify the effects
-        assertEq(restrictedToken.restrictions(account), 0);
+        assertEq(token.restrictions(account), 0);
     }
 
     /**
@@ -69,13 +145,15 @@ contract TestRestrictedToken is Test {
         address from = address(0x123);
         address to = address(0x456);
         uint256 amount = 100;
-        restrictedToken.transfer(from, amount);
-        restrictedToken.updateRestriction(from, restrictedToken.RESTRICTION_SEND());
+        token.transfer(from, amount);
+        token.updateRestriction(from, token.RESTRICTION_SEND());
 
-        vm.prank(from);
         // Call the function
-        (bool success, ) = address(restrictedToken).call(abi.encodeWithSignature("transfer(address,uint256)", to, amount));
-        
+        vm.prank(from);
+        (bool success, ) = address(token).call(
+            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
+        );
+
         // Verify the effects
         assertFalse(success);
     }
@@ -88,12 +166,14 @@ contract TestRestrictedToken is Test {
         address from = address(0x123);
         address to = address(0x123);
         uint256 amount = 100;
-        restrictedToken.transfer(from, amount);
-        restrictedToken.updateRestriction(to, restrictedToken.RESTRICTION_RECEIVE());
+        token.transfer(from, amount);
+        token.updateRestriction(to, token.RESTRICTION_RECEIVE());
 
-        vm.prank(from);
         // Call the function
-        (bool success, ) = address(restrictedToken).call(abi.encodeWithSignature("transfer(address,uint256)", to, amount));
+        vm.prank(from);
+        (bool success, ) = address(token).call(
+            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
+        );
 
         // Verify the effects
         assertFalse(success);
@@ -108,8 +188,10 @@ contract TestRestrictedToken is Test {
         uint256 amount = 100;
 
         // Call the function
-        (bool success, ) = address(restrictedToken).call(abi.encodeWithSignature("transfer(address,uint256)", to, amount));
-        
+        (bool success, ) = address(token).call(
+            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
+        );
+
         // Verify the effects
         assertTrue(success);
     }

@@ -8,7 +8,7 @@ import "./utils/Bitwise.sol";
 
 /**
  * @title RestrictedToken
- * @dev A Solidity contract that extends the ERC1363 token and implements the IRestrictedToken interface. 
+ * @dev A Solidity contract that extends the ERC1363 token and implements the IRestrictedToken interface.
  * This contract defines restrictions on sending and receiving tokens for individual accounts.
  */
 contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
@@ -29,7 +29,7 @@ contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
         string memory symbol,
         uint256 initialSupply
     ) Ownable() ERC20(name, symbol) {
-        _mint(msg.sender, initialSupply);
+        _mint(owner(), initialSupply);
     }
 
     /**
@@ -67,10 +67,7 @@ contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
      * @param account The address of the account which restriction is being updated.
      * @param restriction The new restriction to assign to the account.
      */
-    function _updateRestriction(
-        address account,
-        bytes1 restriction
-    ) private {
+    function _updateRestriction(address account, bytes1 restriction) private {
         if (restriction == 0) {
             delete restrictions[account];
         } else {
