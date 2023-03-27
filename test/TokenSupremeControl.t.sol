@@ -51,7 +51,7 @@ contract TokenSupremeControlTest is Test {
      */
     function testTransferOwnership() public {
         // Set up
-        address newOwner = address(0x123);
+        address newOwner = vm.addr(1);
 
         // Call the function
         token.transferOwnership(newOwner);
@@ -65,8 +65,8 @@ contract TokenSupremeControlTest is Test {
      */
     function testTransferFromWithOwner() public {
         // Set up
-        address from = address(0x123);
-        address to = address(0x456);
+        address from = vm.addr(1);
+        address to = vm.addr(2);
         uint256 amount = 100;
         token.transfer(from, amount);
 
@@ -82,8 +82,8 @@ contract TokenSupremeControlTest is Test {
      */
     function testTransferFromWithoutOwner() public {
         // Set up
-        address from = address(0x123);
-        address to = address(0x456);
+        address from = vm.addr(1);
+        address to = vm.addr(2);
         uint256 amount = 100;
         token.transfer(from, amount);
         vm.prank(from);

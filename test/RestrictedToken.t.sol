@@ -48,7 +48,7 @@ contract TestRestrictedToken is Test {
      */
     function testTransferOwnership() public {
         // Set up
-        address newOwner = address(0x123);
+        address newOwner = vm.addr(1);
 
         // Call the function
         token.transferOwnership(newOwner);
@@ -62,7 +62,7 @@ contract TestRestrictedToken is Test {
      */
     function testUpdateRestrictions() public {
         // Set up
-        address account = address(0x123);
+        address account = vm.addr(1);
         bytes1 restriction = token.RESTRICTION_SEND();
 
         // Call the function
@@ -99,7 +99,7 @@ contract TestRestrictedToken is Test {
      */
     function testDeleteRestriction() public {
         // Set up
-        address account = address(0x123);
+        address account = vm.addr(1);
         bytes1 restriction = token.RESTRICTION_SEND();
         token.updateRestriction(account, restriction);
 
@@ -115,7 +115,7 @@ contract TestRestrictedToken is Test {
      */
     function testUpdateRestrictionEvent() public {
         // Set up
-        address account = address(0x123);
+        address account = vm.addr(1);
         bytes1 restriction = token.RESTRICTION_SEND();
         vm.expectEmit(true, false, false, false, address(token));
 
@@ -131,7 +131,7 @@ contract TestRestrictedToken is Test {
      */
     function testDefaultRestrictions() public {
         // Set up
-        address account = address(0x123);
+        address account = vm.addr(1);
 
         // Verify the effects
         assertEq(token.restrictions(account), 0);
@@ -142,8 +142,8 @@ contract TestRestrictedToken is Test {
      */
     function testTransferWithRestrictionSend() public {
         // Set up
-        address from = address(0x123);
-        address to = address(0x456);
+        address from = vm.addr(1);
+        address to = vm.addr(2);
         uint256 amount = 100;
         token.transfer(from, amount);
         token.updateRestriction(from, token.RESTRICTION_SEND());
@@ -163,8 +163,8 @@ contract TestRestrictedToken is Test {
      */
     function testTransferWithRestrictionReceive() public {
         // Set up
-        address from = address(0x123);
-        address to = address(0x123);
+        address from = vm.addr(1);
+        address to = vm.addr(1);
         uint256 amount = 100;
         token.transfer(from, amount);
         token.updateRestriction(to, token.RESTRICTION_RECEIVE());
@@ -184,7 +184,7 @@ contract TestRestrictedToken is Test {
      */
     function testTransferWithoutRestrictions() public {
         // Set up
-        address to = address(0x123);
+        address to = vm.addr(1);
         uint256 amount = 100;
 
         // Call the function
