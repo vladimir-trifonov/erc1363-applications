@@ -190,7 +190,7 @@ contract BondingTokenTest is Test {
         uint256 price = BondingCurve.calculatePriceForTokens(1, 0);
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked("Amount is zero"));
+        vm.expectRevert("Amount is zero");
 
         // Call the function
         hoax(buyer);
@@ -207,7 +207,7 @@ contract BondingTokenTest is Test {
         hoax(buyer);
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked("Insufficient funds"));
+        vm.expectRevert("Insufficient funds");
 
         // Call the function
         token.buy(amount);
@@ -223,7 +223,7 @@ contract BondingTokenTest is Test {
         hoax(buyer);
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked("Amount is too high"));
+        vm.expectRevert("Amount is too high");
 
         // Call the function
         token.buy{value: 100}(amount);
@@ -258,7 +258,7 @@ contract BondingTokenTest is Test {
         address buyer = vm.addr(1);
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked("Insufficient amount"));
+        vm.expectRevert("Insufficient amount");
 
         // Call the function
         vm.prank(buyer);

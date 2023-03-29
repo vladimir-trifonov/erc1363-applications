@@ -75,23 +75,16 @@ contract TestRestrictedToken is Test {
     /**
      * @dev Tests the `updateRestriction` function of the RestrictedToken contract with the zero address.
      */
-    function testUpdateRestrictionsForZeroAddress() public {
+    function testRevert_UpdateRestrictionsForZeroAddress() public {
         // Set up
         address account = address(0);
         bytes1 restriction = token.RESTRICTION_SEND();
 
-        // Call the function
-        (bool success, ) = address(token).call(
-            abi.encodeWithSignature(
-                "updateRestriction(address,bytes1)",
-                account,
-                restriction
-            )
-        );
+        // Expect revert
+        vm.expectRevert("Account is the zero address");
 
-        // Verify the effects
-        assertFalse(success);
-        assertTrue(token.restrictions(account) != restriction);
+        // Call the function
+        token.updateRestriction(account, restriction);
     }
 
     /**
@@ -151,7 +144,7 @@ contract TestRestrictedToken is Test {
         token.updateRestriction(from, token.RESTRICTION_SEND());
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked('Address from has restriction to send'));
+        vm.expectRevert('Address from has restriction to send');
 
         // Call the function
         vm.prank(from);
@@ -170,7 +163,7 @@ contract TestRestrictedToken is Test {
         token.updateRestriction(to, token.RESTRICTION_RECEIVE());
 
         // Expect revert
-        vm.expectRevert(abi.encodePacked('Address to has restriction to receive'));
+        vm.expectRevert('Address to has restriction to receive');
 
         // Call the function
         vm.prank(from);
@@ -186,9 +179,7 @@ contract TestRestrictedToken is Test {
         uint256 amount = 100;
 
         // Call the function
-        (bool success, ) = address(token).call(
-            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
-        );
+        bool success = token.transfer(to, amount);
 
         // Verify the effects
         assertTrue(success);

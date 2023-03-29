@@ -69,9 +69,11 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      */
     function _buy(address account, uint256 amount) private {
         uint256 cost = calculatePriceForTokens(amount);
+        require(msg.value >= cost, "Insufficient funds");
         _mint(account, amount);
         require(totalSupply() <= MAX_SUPPLY_THRESHOLD, "Max supply threshold reached");
         if (msg.value > cost) {
+            // TODO: use https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol#L64
             payable(account).transfer(msg.value - cost);
         }
 
@@ -99,6 +101,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
     function _sell(address account, uint256 amount) private {
         _burn(address(this), amount);
         uint256 payout = calculatePriceForTokens(amount);
+        // TODO: use https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol#L64
         payable(account).transfer(payout);
 
         emit Sell(account, amount);
@@ -158,6 +161,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
     /**
      * @dev Allows the contract to receive Ether by calling the buy function with the amount of tokens
      * that can be bought with the received Ether.
+     * @dev TODO: Parameter to control the slippage as bytes and then check it in onTransferReceived.
      */
     receive() external payable {
         require(msg.value > 0, "Insufficient funds");
