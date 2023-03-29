@@ -117,7 +117,9 @@ contract TestRestrictedToken is Test {
         // Set up
         address account = vm.addr(1);
         bytes1 restriction = token.RESTRICTION_SEND();
-        vm.expectEmit(true, false, false, false, address(token));
+
+        // Expect the event
+        vm.expectEmit(true, false, false, true);
 
         // We emit the event we expect to see.
         emit TestRestrictedToken.UpdateRestriction(account, restriction);
@@ -140,7 +142,7 @@ contract TestRestrictedToken is Test {
     /**
      * @dev Tests transferring tokens with a "send" restriction.
      */
-    function testTransferWithRestrictionSend() public {
+    function testRevert_TransferWithRestrictionSend() public {
         // Set up
         address from = vm.addr(1);
         address to = vm.addr(2);
@@ -148,20 +150,18 @@ contract TestRestrictedToken is Test {
         token.transfer(from, amount);
         token.updateRestriction(from, token.RESTRICTION_SEND());
 
+        // Expect revert
+        vm.expectRevert(abi.encodePacked('Address from has restriction to send'));
+
         // Call the function
         vm.prank(from);
-        (bool success, ) = address(token).call(
-            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
-        );
-
-        // Verify the effects
-        assertFalse(success);
+        token.transfer(to, amount);
     }
 
     /**
      * @dev Tests transferring tokens with a "receive" restriction.
      */
-    function testTransferWithRestrictionReceive() public {
+    function testRevert_TransferWithRestrictionReceive() public {
         // Set up
         address from = vm.addr(1);
         address to = vm.addr(1);
@@ -169,14 +169,12 @@ contract TestRestrictedToken is Test {
         token.transfer(from, amount);
         token.updateRestriction(to, token.RESTRICTION_RECEIVE());
 
+        // Expect revert
+        vm.expectRevert(abi.encodePacked('Address to has restriction to receive'));
+
         // Call the function
         vm.prank(from);
-        (bool success, ) = address(token).call(
-            abi.encodeWithSignature("transfer(address,uint256)", to, amount)
-        );
-
-        // Verify the effects
-        assertFalse(success);
+        token.transfer(to, amount);
     }
 
     /**

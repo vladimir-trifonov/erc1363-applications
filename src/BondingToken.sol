@@ -13,13 +13,16 @@ import "./utils/BondingCurve.sol";
  * The contract also implements the IERC1363Receiver interface to receive tokens that are sent to the contract.
  */
 contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
+    uint256 public constant MAX_BUY_AMOUNT_PER_TX = 1_000_000_000;
+    uint256 public constant MAX_SUPPLY_THRESHOLD = 1_000_000_000_000;
+
     /**
      * @dev Throws if the caller is not the token contract.
      */
     modifier onlyAllowedToken() {
         require(
             msg.sender == address(this),
-            "BondingToken: only allowed token"
+            "Only allowed token"
         );
         _;
     }
@@ -35,12 +38,26 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
     ) ERC20(_name, _symbol) {}
 
     /**
+     * @dev Checks if a contract implements the IBondingToken interface.
+     * @param interfaceId The interface ID being checked.
+     * @return A boolean indicating if the contract implements the IBondingToken interface.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC1363) returns (bool) {
+        return
+            interfaceId == type(IBondingToken).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    /**
      * @dev Allows a user to buy tokens by sending Ether to the contract.
      * @param amount The amount of tokens to buy.
      */
     function buy(uint256 amount) public payable {
         require(msg.value > 0, "Insufficient funds");
         require(amount > 0, "Amount is zero");
+        require(amount <= MAX_BUY_AMOUNT_PER_TX, "Amount is too high");
 
         _buy(msg.sender, amount);
     }
@@ -53,6 +70,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
     function _buy(address account, uint256 amount) private {
         uint256 cost = calculatePriceForTokens(amount);
         _mint(account, amount);
+        require(totalSupply() <= MAX_SUPPLY_THRESHOLD, "Max supply threshold reached");
         if (msg.value > cost) {
             payable(account).transfer(msg.value - cost);
         }
@@ -65,11 +83,11 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      * @param amount The amount of tokens to sell.
      */
     function sell(uint256 amount) external {
-        require(balanceOf(msg.sender) >= amount, "Insufficient funds");
+        require(balanceOf(msg.sender) >= amount, "Insufficient amount");
 
         bool success = transfer(address(this), amount);
         if (!success) {
-            revert("BondingToken: transfer failed");
+            revert("Transfer failed");
         }
     }
 
@@ -98,7 +116,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
         address to,
         uint256 amount
     ) internal override {
-        if (to == address(this)) {
+        if (from != address(0) && to == address(this)) {
             _sell(from, amount);
         }
     }
@@ -133,8 +151,8 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
         address,
         uint256,
         bytes calldata
-    ) external view override onlyAllowedToken returns (bytes4) {
-        return BondingToken.onTransferReceived.selector;
+    ) external view override onlyAllowedToken() returns (bytes4) {
+        return IERC1363Receiver.onTransferReceived.selector;
     }
 
     /**
@@ -142,6 +160,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      * that can be bought with the received Ether.
      */
     receive() external payable {
+        require(msg.value > 0, "Insufficient funds");
         buy(calculateTokensForPrice(msg.value));
     }
 }

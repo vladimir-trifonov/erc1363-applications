@@ -91,14 +91,7 @@ contract TokenSupremeControlTest is Test {
 
         // Call the function
         vm.prank(from);
-        (bool success, ) = address(token).call(
-            abi.encodeWithSignature(
-                "transferFrom(address,address,uint256)",
-                from,
-                to,
-                amount
-            )
-        );
+        bool success = token.transferFrom(from, to, amount);
 
         // Verify the effects
         assertTrue(success);

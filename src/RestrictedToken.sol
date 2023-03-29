@@ -56,7 +56,7 @@ contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
     ) external onlyOwner {
         require(
             account != address(0),
-            "RestrictedToken: account is the zero address"
+            "Account is the zero address"
         );
 
         _updateRestriction(account, restriction);
@@ -90,12 +90,12 @@ contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
         require(
             from == address(0) ||
                 !Bitwise.check(restrictions[from], RESTRICTION_SEND),
-            "RestrictedToken: address from has restriction to send"
+            "Address from has restriction to send"
         );
         require(
             to == address(0) ||
                 !Bitwise.check(restrictions[to], RESTRICTION_RECEIVE),
-            "RestrictedToken: address to has restriction to receive"
+            "Address to has restriction to receive"
         );
     }
 }
