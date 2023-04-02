@@ -100,7 +100,7 @@ contract BondingTokenTest is Test {
         uint256 balance = address(buyer).balance;
 
         // Call the function
-        (bool success, ) = address(token).call{value: value}("");
+        (bool success, ) = address(token).call{value: value}(abi.encode(tokens));
 
         // Verify the effects
         assertTrue(success);
@@ -116,10 +116,10 @@ contract BondingTokenTest is Test {
         // Set up
         address buyer = vm.addr(1);
         uint256 value = 1 ether;
+        uint256 tokens = BondingCurve.calculateTokensForPrice(value, 0);
         hoax(buyer);
         uint256 balance = address(buyer).balance;
-        (bool success, ) = address(token).call{value: value}("");
-        uint256 tokens = token.balanceOf(buyer);
+        (bool success, ) = address(token).call{value: value}(abi.encode(tokens));
 
         // Call the function
         vm.prank(buyer);
@@ -139,9 +139,9 @@ contract BondingTokenTest is Test {
         // Set up
         address buyer = vm.addr(1);
         uint256 value = 1 ether;
+        uint256 tokens = BondingCurve.calculateTokensForPrice(value, 0);
         hoax(buyer);
-        (bool success, ) = address(token).call{value: value}("");
-        uint256 tokens = token.balanceOf(buyer);
+        (bool success, ) = address(token).call{value: value}(abi.encode(tokens));
 
         // Expect the event
         vm.expectEmit(true, false, false, true);
@@ -164,10 +164,10 @@ contract BondingTokenTest is Test {
         // Set up
         address buyer = vm.addr(1);
         uint256 value = 1 ether;
+        uint256 tokens = BondingCurve.calculateTokensForPrice(value, 0);
         hoax(buyer);
         uint256 balance = address(buyer).balance;
-        (bool success, ) = address(token).call{value: value}("");
-        uint256 tokens = token.balanceOf(buyer);
+        (bool success, ) = address(token).call{value: value}(abi.encode(tokens));
 
         // Call the function
         vm.prank(buyer);

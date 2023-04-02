@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "erc1363-payable-token/contracts/token/ERC1363/ERC1363.sol";
 import "erc1363-payable-token/contracts/token/ERC1363/IERC1363Receiver.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./IBondingToken.sol";
 import "./utils/BondingCurve.sol";
 
@@ -20,10 +21,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      * @dev Throws if the caller is not the token contract.
      */
     modifier onlyAllowedToken() {
-        require(
-            msg.sender == address(this),
-            "Only allowed token"
-        );
+        require(msg.sender == address(this), "Only allowed token");
         _;
     }
 
@@ -71,10 +69,12 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
         uint256 cost = calculatePriceForTokens(amount);
         require(msg.value >= cost, "Insufficient funds");
         _mint(account, amount);
-        require(totalSupply() <= MAX_SUPPLY_THRESHOLD, "Max supply threshold reached");
+        require(
+            totalSupply() <= MAX_SUPPLY_THRESHOLD,
+            "Max supply threshold reached"
+        );
         if (msg.value > cost) {
-            // TODO: use https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol#L64
-            payable(account).transfer(msg.value - cost);
+            Address.sendValue(payable(account), msg.value - cost);
         }
 
         emit Buy(account, amount);
@@ -101,8 +101,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
     function _sell(address account, uint256 amount) private {
         _burn(address(this), amount);
         uint256 payout = calculatePriceForTokens(amount);
-        // TODO: use https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol#L64
-        payable(account).transfer(payout);
+        Address.sendValue(payable(account), payout);
 
         emit Sell(account, amount);
     }
@@ -154,17 +153,26 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
         address,
         uint256,
         bytes calldata
-    ) external view override onlyAllowedToken() returns (bytes4) {
+    ) external view override onlyAllowedToken returns (bytes4) {
         return IERC1363Receiver.onTransferReceived.selector;
     }
 
     /**
      * @dev Allows the contract to receive Ether by calling the buy function with the amount of tokens
      * that can be bought with the received Ether.
-     * @dev TODO: Parameter to control the slippage as bytes and then check it in onTransferReceived.
      */
-    receive() external payable {
+    fallback(
+        bytes calldata _input
+    ) external payable returns (bytes memory _output) {
         require(msg.value > 0, "Insufficient funds");
-        buy(calculateTokensForPrice(msg.value));
+        uint256 amount = calculateTokensForPrice(msg.value);
+        uint256 decoded = abi.decode(_input, (uint256));
+        require(amount >= decoded, "Amount is not correct");
+        buy(amount);
+        return abi.encode(amount);
+    }
+
+    receive() external payable {
+        revert("Not supported");
     }
 }

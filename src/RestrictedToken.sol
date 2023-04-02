@@ -68,11 +68,7 @@ contract RestrictedToken is ERC1363, IRestrictedToken, Ownable {
      * @param restriction The new restriction to assign to the account.
      */
     function _updateRestriction(address account, bytes1 restriction) private {
-        if (restriction == 0) {
-            delete restrictions[account];
-        } else {
-            restrictions[account] = restriction;
-        }
+        restrictions[account] = restriction;
 
         emit UpdateRestriction(account, restriction);
     }
