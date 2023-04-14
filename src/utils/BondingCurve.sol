@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 /**
  * @title BondingCurve
@@ -49,7 +49,6 @@ library BondingCurve {
      * function implemented using the binary search algorithm.
      */
     function cubeRoot(uint256 n) internal pure returns (uint256) {
-        require(n >= 0, "Input must be non-negative");
         return nthRoot(n, 3);
     }
 
@@ -71,7 +70,6 @@ library BondingCurve {
      * non-negative real number x, which is a limitation of the algorithm.
      */
     function nthRoot(uint256 x, uint256 n) internal pure returns (uint256) {
-        require(x >= 0, "Input must be non-negative");
         require(n > 0, "Root must be positive");
 
         if (x == 0) {

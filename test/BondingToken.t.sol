@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 import "forge-std/Test.sol";
 import "../src/BondingToken.sol";
@@ -167,13 +167,14 @@ contract BondingTokenTest is Test {
         uint256 tokens = BondingCurve.calculateTokensForPrice(value, 0);
         hoax(buyer);
         uint256 balance = address(buyer).balance;
-        (bool success, ) = address(token).call{value: value}(abi.encode(tokens));
+        (bool ret, ) = address(token).call{value: value}(abi.encode(tokens));
 
         // Call the function
         vm.prank(buyer);
-        token.transferAndCall(address(token), tokens);
+        bool success = token.transferAndCall(address(token), tokens);
 
         // Verify the effects
+        assertTrue(ret);
         assertTrue(success);
         assertEq(token.balanceOf(buyer), 0);
         assertEq(token.totalSupply(), 0);

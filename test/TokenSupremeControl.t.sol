@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 import "forge-std/Test.sol";
 import "erc1363-payable-token/contracts/token/ERC1363/IERC1363.sol";
@@ -68,12 +68,14 @@ contract TokenSupremeControlTest is Test {
         address from = vm.addr(1);
         address to = vm.addr(2);
         uint256 amount = 100;
-        token.transfer(from, amount);
+        bool ret = token.transfer(from, amount);
 
         // Call the function
-        token.transferFrom(from, to, amount);
+        bool success = token.transferFrom(from, to, amount);
 
         // Verify the effects
+        assertTrue(ret);
+        assertTrue(success);
         assertEq(token.balanceOf(to), amount);
     }
 
@@ -85,7 +87,7 @@ contract TokenSupremeControlTest is Test {
         address from = vm.addr(1);
         address to = vm.addr(2);
         uint256 amount = 100;
-        token.transfer(from, amount);
+        bool ret = token.transfer(from, amount);
         vm.prank(from);
         token.approve(from, amount);
 
@@ -94,6 +96,7 @@ contract TokenSupremeControlTest is Test {
         bool success = token.transferFrom(from, to, amount);
 
         // Verify the effects
+        assertTrue(ret);
         assertTrue(success);
         assertEq(token.balanceOf(to), amount);
     }

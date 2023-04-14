@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 import "erc1363-payable-token/contracts/token/ERC1363/ERC1363.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -34,8 +34,7 @@ contract TokenSupremeControl is ERC1363, Ownable {
      * @return A boolean indicating whether the transfer was successful or not.
      */
     function transferFrom(address from, address to, uint256 amount) public override(ERC20, IERC20) returns (bool) {
-        address owner = owner();
-        if (_msgSender() == owner) {
+        if (msg.sender == owner()) {
             super._transfer(from, to, amount);
             return true;
         } else {

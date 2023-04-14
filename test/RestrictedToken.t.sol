@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 import "forge-std/Test.sol";
 import "../src/RestrictedToken.sol";
@@ -140,7 +140,7 @@ contract TestRestrictedToken is Test {
         address from = vm.addr(1);
         address to = vm.addr(2);
         uint256 amount = 100;
-        token.transfer(from, amount);
+        bool ret = token.transfer(from, amount);
         token.updateRestriction(from, token.RESTRICTION_SEND());
 
         // Expect revert
@@ -148,7 +148,11 @@ contract TestRestrictedToken is Test {
 
         // Call the function
         vm.prank(from);
-        token.transfer(to, amount);
+        bool success = token.transfer(to, amount);
+
+        // Verify the effects
+        assertTrue(ret);
+        assertFalse(success);
     }
 
     /**
@@ -159,7 +163,7 @@ contract TestRestrictedToken is Test {
         address from = vm.addr(1);
         address to = vm.addr(1);
         uint256 amount = 100;
-        token.transfer(from, amount);
+        bool ret = token.transfer(from, amount);
         token.updateRestriction(to, token.RESTRICTION_RECEIVE());
 
         // Expect revert
@@ -167,7 +171,11 @@ contract TestRestrictedToken is Test {
 
         // Call the function
         vm.prank(from);
-        token.transfer(to, amount);
+        bool success = token.transfer(to, amount);
+
+        // Verify the effects
+        assertTrue(ret);
+        assertFalse(success);
     }
 
     /**

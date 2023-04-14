@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.15;
 
 import "erc1363-payable-token/contracts/token/ERC1363/ERC1363.sol";
 import "erc1363-payable-token/contracts/token/ERC1363/IERC1363Receiver.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./IBondingToken.sol";
 import "./utils/BondingCurve.sol";
 
@@ -13,7 +14,7 @@ import "./utils/BondingCurve.sol";
  * The contract uses ERC1363 to accept and transfer tokens, and implements the IBondingToken interface for buying and selling tokens.
  * The contract also implements the IERC1363Receiver interface to receive tokens that are sent to the contract.
  */
-contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
+contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken, ReentrancyGuard {
     uint256 public constant MAX_BUY_AMOUNT_PER_TX = 1_000_000_000;
     uint256 public constant MAX_SUPPLY_THRESHOLD = 1_000_000_000_000;
 
@@ -52,7 +53,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      * @dev Allows a user to buy tokens by sending Ether to the contract.
      * @param amount The amount of tokens to buy.
      */
-    function buy(uint256 amount) public payable {
+    function buy(uint256 amount) public payable nonReentrant {
         require(msg.value > 0, "Insufficient funds");
         require(amount > 0, "Amount is zero");
         require(amount <= MAX_BUY_AMOUNT_PER_TX, "Amount is too high");
@@ -84,7 +85,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken {
      * @dev Allows a user to sell tokens back to the contract in exchange for Ether.
      * @param amount The amount of tokens to sell.
      */
-    function sell(uint256 amount) external {
+    function sell(uint256 amount) external nonReentrant {
         require(balanceOf(msg.sender) >= amount, "Insufficient amount");
 
         bool success = transfer(address(this), amount);
