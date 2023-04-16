@@ -28,7 +28,8 @@ library BondingCurve {
         uint256 supply
     ) public pure returns (uint256) {
         return
-            (((supply + amount + 1) ** 3 - (supply + 1) ** 3) / 3) * MULTIPLIER;
+            ((((supply + amount + 1) ** 3 - (supply + 1) ** 3) * MULTIPLIER) /
+                3) - (amount / 3);
     }
 
     /**

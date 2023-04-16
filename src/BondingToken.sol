@@ -14,7 +14,12 @@ import "./utils/BondingCurve.sol";
  * The contract uses ERC1363 to accept and transfer tokens, and implements the IBondingToken interface for buying and selling tokens.
  * The contract also implements the IERC1363Receiver interface to receive tokens that are sent to the contract.
  */
-contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken, ReentrancyGuard {
+contract BondingToken is
+    ERC1363,
+    IERC1363Receiver,
+    IBondingToken,
+    ReentrancyGuard
+{
     uint256 public constant MAX_BUY_AMOUNT_PER_TX = 1_000_000_000;
     uint256 public constant MAX_SUPPLY_THRESHOLD = 1_000_000_000_000;
 
@@ -168,7 +173,7 @@ contract BondingToken is ERC1363, IERC1363Receiver, IBondingToken, ReentrancyGua
         require(msg.value > 0, "Insufficient funds");
         uint256 amount = calculateTokensForPrice(msg.value);
         uint256 decoded = abi.decode(_input, (uint256));
-        require(amount >= decoded, "Amount is not correct");
+        require(amount >= decoded, "Slippage is too high");
         buy(amount);
         return abi.encode(amount);
     }

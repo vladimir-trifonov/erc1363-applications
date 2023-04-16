@@ -7,11 +7,19 @@ import "../../src/utils/BondingCurve.sol";
 contract BondingCurveTest is Test {
     using BondingCurve for uint256;
 
+    function testCalculatePriceForTokensBuySell() public {
+        uint256 sum = 0;
+        sum += BondingCurve.calculatePriceForTokens(1, 0);
+        sum += BondingCurve.calculatePriceForTokens(1, 1);
+        sum += BondingCurve.calculatePriceForTokens(1, 2);
+        assertEq(sum, BondingCurve.calculatePriceForTokens(3, 0));
+    }
+
     function testCalculatePriceForTokens() public {
         // Test with token supply of 0 and amount of 100 tokens
         uint256 amount = 100;
         uint256 supply = 0;
-        uint256 expectedPrice = 0.000000343433 ether; // 0,000000343433 Ether
+        uint256 expectedPrice = 0.000000343433333300 ether;
         uint256 actualPrice = BondingCurve.calculatePriceForTokens(
             amount,
             supply
@@ -21,14 +29,14 @@ contract BondingCurveTest is Test {
         // Test with token supply of 100 and amount of 50 tokens
         amount = 50;
         supply = 100;
-        expectedPrice = 0.000000804216 ether; // 0,000000804216 Ether
+        expectedPrice = 0.000000804216666650 ether;
         actualPrice = BondingCurve.calculatePriceForTokens(amount, supply);
         assertEq(actualPrice, expectedPrice);
 
         // Test with token supply of 1000 and amount of 200 tokens
         amount = 20_000;
         supply = 1_000;
-        expectedPrice = 3.087106686666 ether; // 3,087106686666 Ether
+        expectedPrice = 3.087106686666660000 ether;
         actualPrice = BondingCurve.calculatePriceForTokens(amount, supply);
         assertEq(actualPrice, expectedPrice);
     }
