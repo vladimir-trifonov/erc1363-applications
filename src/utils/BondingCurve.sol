@@ -40,7 +40,9 @@ library BondingCurve {
         uint256 amount,
         uint256 supply
     ) public pure returns (uint256) {
-        uint256 root = cubeRoot((amount / MULTIPLIER) * 3 + (supply + 1) ** 3);
+        uint256 root = cubeRoot(
+            ((amount / MULTIPLIER) * 3 + (supply + 1) ** 3)
+        );
         require(root >= supply + 1, "Amount is too low");
         return root - supply - 1;
     }
